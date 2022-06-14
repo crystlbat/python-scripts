@@ -1,103 +1,16 @@
-from tkinter import *
-from openpyxl import workbook
-from openpyxl import load_workbook
-import os
-import glob
-import datetime
-import wave
-from vosk import Model, KaldiRecognizer, SetLogLevel
-import json
+from datetime import datetime
 
+import requests
 
-#model = Model("model")
+headers = {
+    'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpY0JVSWQiOjQ1OTMyOTksIm5hbWUiOiJwcmF0aGFtZXNoLnNhcm9kZUB1bmlwaG9yZS5jb20iLCJpc3MiOiJodHRwczovL2FwaS5pbmNvbnRhY3QuY29tIiwic3ViIjoidXNlcjozMDI5NDA2NCIsImF1ZCI6IlVuaXBob3JlQFVuaXBob3JlIiwiZXhwIjoxNjU0MTU1OTQ1LCJpYXQiOjE2NTQxNTIzNDYsImljU2NvcGUiOiI4IiwiaWNDbHVzdGVySWQiOiJDNiIsImljQWdlbnRJZCI6MzAyOTQwNjQsImljU1BJZCI6MjE0NSwiZ2l2ZW5fbmFtZSI6IlByYXRoYW1lc2giLCJmYW1pbHlfbmFtZSI6IlNhcm9kZSIsInRlbmFudElkIjoiMTFlOWVmZDEtNGQ3Ny1mNjE3LTgwZWEtMDA1MDU2YTEwYzlkIiwibmJmIjoxNjU0MTUyMzQ1fQ.Q5pmHpVmrnkpe5H0UzQuo-HEMw3_cUeaIY7_zyl7c_rXG-CL1lifgtvM-Y7CJjroVCx4MpWXQYiVwXiD2D1PdSnMZHIfBeshDlI-CwrTckwFuqhnb_CbltuCGeWchvb6LXNxhCdH9eCPdA6C3kZWOqWp-_KuQeNt36jPOLb6eXta24I732QL_9Xx4PQYXjL6CemdMetGsyHtXX2US-ebP5iJaTyQGp36N1XC2CRbERIvHbrNoAzOiZPJEhUhEU0s00sJn_4LXyo8hhNFaWhgS8BLAMIc8NpBNGx4_gBob4t6IM_uStrCiS9Fr3kl_B1Ab8o6lggHAAo3MLF_h0KrlA',
+    'accept': 'application/json',
+}
 
-screen = Tk()
-screen.title('Call Transcriber')
-screen.minsize(width=500,height=200)
-screen.config(padx=20,pady=10)
+params = {
+    'startDate': '2022-05-31T12:06:20.760Z',
+    'endDate': '2022-05-31T13:59:20.760Z',
+    'isLogged': 'true',
+}
 
-
-fileinfo=Label(text="Enter folderpath: ",font=("Arial",10,"bold"))
-fileinfo.grid(row=0,column=0)
-fileinfo=Label(text="enter filename: ",font=("Arial",10,"bold"))
-fileinfo.grid(row=1,column=0)
-filepath=Entry(width='50')
-fileinput=Entry(width='50')
-file_name=fileinput.get()
-file_path=filepath.get()
-filepath.grid(row=0,column=1)
-fileinput.grid(row=1,column=1)
-print(file_name)
-
-
-def batchprocesor(filename):
-    wav_file = filename
-    txt_file = filename.strip('.wav') + '.txt'
-    wf = wave.open(wav_file, "rb")
-
-
-    rec = KaldiRecognizer(model, wf.getframerate())
-    rec.SetWords(True)
-
-    transcription = []
-
-    while True:
-        data = wf.readframes(4000)
-        if len(data) == 0:
-            break
-        if rec.AcceptWaveform(data):
-            # Convert json output to dict
-            result_dict = json.loads(rec.Result())
-            # Extract text values and append them to transcription list
-            transcription.append(result_dict.get("text", ""))
-            print(f"Agent:{transcription[-1]}")
-
-    final_result = json.loads(rec.FinalResult())
-    transcription.append(final_result.get("text", ""))
-
-    # merge or join all list elements to one big string
-    transcription_text = '\n Speaker:'.join(transcription)
-
-    print(transcription_text)
-    with open(txt_file, 'w') as output:
-        for list in transcription:
-            output.write(f"Speaker:{list}\n")
-
-
-def file_conv(filename):
-    file=os.path.basename(filename)
-    channels=['speaker_1','speaker_2']
-    output_path="C:/CALLS_TEMP/"
-    current_dir = os.getcwd()
-    os.chdir('C:/Program Files (x86)/sox-14-4-2')
-    sox_command_left = f'sox {filename} -b 16 -r 8k {output_path + channels[1] + "_" + file} remix 1'
-    sox_command_right = f'sox {filename} -b 16 -r 8k {output_path + channels[0] + "_" + file} remix 2'
-    os.system(f'cmd /C "{sox_command_right}"')
-    os.system(f'cmd /C "{sox_command_left}"')
-    os.chdir(current_dir)
-    filenames=glob.glob(f'{output_path}*.wav')
-    return filenames
-
-
-def getfile():
-    file_name = fileinput.get()
-    file_path=filepath.get()
-    filename=f'{file_path}\{file_name}.wav'
-    filenames=file_conv(filename)
-
-    processinfo=Label(text=f"Transcribing:{filename}",font=("Arial",10,"bold"))
-    processinfo.grid(column=1,row=3)
-    print(filenames)
-    #for name in filenames:
-        #batchprocesor(name)
-    processinfo['text']=f"Transcribed:{filename}"
-
-
-
-
-button=Button(text='Transcribe',command=getfile)
-button.grid(row=2,column=1)
-
-
-
-screen.mainloop()
+response = requests.get('https://api-c6.incontact.com/inContactAPI/services/v24.0/contacts/completed', params=params, headers=headers)

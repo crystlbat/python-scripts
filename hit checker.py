@@ -22,7 +22,7 @@ print(inputfiles)
 
 
 def checker(filename):
-    wb = openpyxl.load_workbook(r'C:\output mock hit\HIT CHECK REPOSITORY.xlsx')
+    wb = openpyxl.load_workbook(r'C:\output mock hit\HIT CHECK REPOSITORY.xlsx')#created output file
     wb.create_sheet(filename)
     filelist=wb['List']
     filelist["A2"].value=filename
@@ -34,7 +34,7 @@ def checker(filename):
         i=2
         for col in hit_check_df.columns:
             column_names.append(col)
-        with open(Masteroutputfile,'w') as output:
+        with open(Masteroutputfile,'w') as output:# the main process(enganum mattendi vennalo)
             for name in column_names:
                 for value in hit_check_df[name]:
                     for line in lines:

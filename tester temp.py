@@ -1,13 +1,18 @@
+from pytube import YouTube
 
-PURPLE = '\033[95m'
-CYAN = '\033[96m'
-DARKCYAN = '\033[36m'
-BLUE = '\033[94m'
-GREEN = '\033[92m'
-YELLOW = '\033[93m'
-RED = '\033[91m'
-BOLD = '\033[1m'
-UNDERLINE = '\033[4m'
-END = '\033[0m'
 
-print( f'{BOLD}Hello World !{END}' )
+link = input("https://www.youtube.com/watch?v=L1ItJADmcOI")
+yt = YouTube(link)
+
+
+print("Title: ",yt.title)
+print("Number of views: ",yt.views)
+print("Length of video: ",yt.length)
+print("Rating of video: ",yt.rating)
+
+ys = yt.streams.get_highest_resolution()
+
+
+print("Downloading...")
+ys.download("C:")
+print("Download completed!!")
